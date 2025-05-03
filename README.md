@@ -1,0 +1,184 @@
+# API-Development-RESTful-
+
+A RESTful API (Representational State Transfer Application Programming Interface) is an architectural style that defines how applications should communicate with each other over the internet. It uses standard HTTP methods (GET, POST, PUT, DELETE) to interact with resources, making it stateless, scalable, and easy to understand.
+
+---------------------------------------------------------------------------
+||| HOW TO CREATE RESTful API USING PHP & MySQL (BY: Engr. Jibril Isah) |||
+---------------------------------------------------------------------------
+
+how to create php api for crud action with source code with detailed explanations?
+
+
+Creating a PHP API for CRUD (Create, Read, Update, Delete) operations involves several steps. Below, I will guide you through the process of creating a simple RESTful API using PHP and MySQL. This example will cover a basic user management system.
+
+Prerequisites
+PHP: Make sure you have PHP installed on your server.
+MySQL: You need a MySQL database to store your data.
+Postman or any API testing tool: To test your API endpoints.
+
+-----------------------------------------------------------------------
+Step 1: Set Up the Database
+First, create a MySQL database and a table for users as shown in the code below:
+
+-----------------------------------------------------------------------
+
+
+CREATE DATABASE api_db;
+
+USE api_db;
+
+CREATE TABLE users (
+    id INT(11) AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    email VARCHAR(100) NOT NULL UNIQUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+
+-------------------------------------------------------------------------
+
+Step 2: Create the PHP API
+Create a directory for your project, e.g., php-api, and inside it, create a file named:(api.php) as shown below:
+
+Directory Structure:
+
+php-api/
+    ├── api.php
+    └── db.php
+
+-------------------------------------------------------------------------
+
+Step 3: Create the file:(db.php)
+This file will handle the database connection, as shown below in the source code:
+
+
+<?php
+$host = 'localhost'; // Database host
+$db_name = 'api_db'; // Database name
+$username = 'root'; // Database username
+$password = ''; // Database password
+
+try {
+    $conn = new PDO("mysql:host=$host;dbname=$db_name", $username, $password);
+    $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+} catch (PDOException $e) {
+    echo "Connection failed: " . $e->getMessage();
+}
+?>
+
+-------------------------------------------------------------------------
+
+Step 4: Create the file:(api.php)
+This file will handle the API CRUD operations as show in the source code below:
+
+
+<?php
+header("Content-Type: application/json");
+include 'db.php';
+
+$request_method = $_SERVER["REQUEST_METHOD"];
+
+switch ($request_method) {
+    case 'GET':
+        if (!empty($_GET["id"])) {
+            $id = intval($_GET["id"]);
+            get_user($id);
+        } else {
+            get_users();
+        }
+        break;
+
+    case 'POST':
+        create_user();
+        break;
+
+    case 'PUT':
+        $id = intval($_GET["id"]);
+        update_user($id);
+        break;
+
+    case 'DELETE':
+        $id = intval($_GET["id"]);
+        delete_user($id);
+        break;
+
+    default:
+        header("HTTP/1.0 405 Method Not Allowed");
+        break;
+}
+
+function get_users() {
+    global $conn;
+    $stmt = $conn->prepare("SELECT * FROM users");
+    $stmt->execute();
+    $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    echo json_encode($users);
+}
+
+function get_user($id) {
+    global $conn;
+    $stmt = $conn->prepare("SELECT * FROM users WHERE id = ?");
+    $stmt->execute([$id]);
+    $user = $stmt->fetch(PDO::FETCH_ASSOC);
+    echo json_encode($user);
+}
+
+function create_user() {
+    global $conn;
+    $data = json_decode(file_get_contents("php://input"));
+    $name = $data->name;
+    $email = $data->email;
+
+    $stmt = $conn->prepare("INSERT INTO users (name, email) VALUES (?, ?)");
+    if ($stmt->execute([$name, $email])) {
+        echo json_encode(["message" => "User  created successfully."]);
+    } else {
+        echo json_encode(["message" => "Failed to create user."]);
+    }
+}
+
+function update_user($id) {
+    global $conn;
+    $data = json_decode(file_get_contents("php://input"));
+    $name = $data->name;
+    $email = $data->email;
+
+    $stmt = $conn->prepare("UPDATE users SET name = ?, email = ? WHERE id = ?");
+    if ($stmt->execute([$name, $email, $id])) {
+        echo json_encode(["message" => "User  updated successfully."]);
+    } else {
+        echo json_encode(["message" => "Failed to update user."]);
+    }
+}
+
+function delete_user($id) {
+    global $conn;
+    $stmt = $conn->prepare("DELETE FROM users WHERE id = ?");
+    if ($stmt->execute([$id])) {
+        echo json_encode(["message" => "User  deleted successfully."]);
+    } else {
+        echo json_encode(["message" => "Failed to delete user."]);
+    }
+}
+?>
+
+
+------------------------------------------------------------------------
+
+
+Step 5: Testing the API
+You can use Postman or any other API testing tool to test your API.
+
+Get all users:
+
+1)  Method: GET
+	URL: http://localhost/php-api/api.php
+
+2)  **Get a
+
+
+------------------------------------------------------------------------
+
+
+
+
